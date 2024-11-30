@@ -1,7 +1,9 @@
 using Applications.Interceptions;
 using CrossCuting;
 using Domain;
+using Infrastructure.Context;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,14 @@ builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuditLogBehav
 
 
 var app = builder.Build();
+app.Urls.Add("http://0.0.0.0:5001"); // Define a porta como 5001
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<TaskManagerContext>();
+    dbContext.Database.Migrate();
+}
 
 AppContext.SetSwitch("System.Globalization.Invariant", false);
 

@@ -1,37 +1,32 @@
-# Imagem base para execução do ASP.NET
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+# Use a imagem base para .NET SDK versão 8.0
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /app
+
+# Copiar os arquivos de projeto e restaurar dependências
+COPY ./TaskManager.sln ./
+COPY ./Application/*.csproj ./Application/
+COPY ./Domain/*.csproj ./Domain/
+COPY ./Infrastructure/*.csproj ./Infrastructure/
+COPY ./CrossCuting/*.csproj ./CrossCuting/
+COPY ./Apresentation/Api/*.csproj ./Apresentation/Api/
+COPY ./Tests/Application.Test/*.csproj ./Tests/Application.Test/
+COPY ./Tests/Apresentation.Test/*.csproj ./Tests/Apresentation.Test/
+
+# Restaurar dependências
+RUN dotnet restore
+
+# Copiar todos os arquivos e compilar o projeto
+COPY . ./
+RUN dotnet publish ./Apresentation/Api/Api.csproj -c Release -o out
+
+# Configurar a imagem runtime para .NET 8.0
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build-env /app/out .
+
+# Expor a porta padrão da API
 EXPOSE 80
+EXPOSE 443
 
-# Imagem base para build (SDK)
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
-
-# Copiar a solução e todos os projetos .csproj para o contêiner
-COPY ["TaskManager.sln", "./"]
-COPY ["Application/Application/Application.csproj", "Application/"]
-COPY ["Apresentation/Api/Api.csproj", "Api/"]
-COPY ["CrossCuting/CrossCuting.csproj", "CrossCuting/"]
-COPY ["Domain/Domain/Domain.csproj", "Domain/"]
-COPY ["Infrastructure/Infrastructure/Infrastructure.csproj", "Infrastructure/"]
-
-# Restaurar as dependências
-RUN dotnet restore "TaskManager.sln"
-
-# Copiar o restante dos arquivos do projeto para o contêiner
-COPY . .
-
-# Construir a solução
-RUN dotnet build "TaskManager.sln" -c Release -o /app/build
-
-# Publicar o projeto
-FROM build AS publish
-RUN dotnet publish "TaskManager.sln" -c Release -o /app/publish
-
-# Imagem final para execução do ASP.NET
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-
-# Definir o ponto de entrada do contêiner
-ENTRYPOINT ["dotnet", "TaskManager.dll"]
+# Comando de inicialização
+ENTRYPOINT ["dotnet", "Api.dll"]
