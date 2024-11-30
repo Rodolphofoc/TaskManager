@@ -34,3 +34,7 @@ Clone o repositório para sua máquina local:
 ```bash
 git clone https://github.com/Rodolphofoc/TaskManager.git
 cd TaskManager
+
+### 1. Clonar o Repositório
+
+Rode o docker-compose.yaml
