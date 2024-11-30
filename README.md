@@ -27,14 +27,12 @@ O projeto está dividido nas seguintes camadas:
 
 ## Passos para rodar o projeto no Docker
 
-### 1. Clonar o Repositório
-
 Clone o repositório para sua máquina local:
 
 ```bash
 git clone https://github.com/Rodolphofoc/TaskManager.git
 cd TaskManager
 
-### 1. Clonar o Repositório
+e
 
 Rode o docker-compose.yaml
